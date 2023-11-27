@@ -1,0 +1,49 @@
+```{r}
+#install.packages("jsonlite")
+library(jsonlite)
+data1 <- fromJSON(file.choose())
+```
+1.	Convert the data source format (JSON) to the dataframe. (2M)
+2.	Tidy up the date format to become readable, i.e., 2nd Sep 2021 => 2/9/2021
+```{r}
+#modify all of the date format
+data2 <- data.frame(data1)
+Sys.setlocale("LC_TIME", "C")
+data2$date <- gsub("st|nd|rd|th", "", data2$date )
+data2$date <- format( as.Date( data2$date, format="%d %b %Y"), "%d/%m/%Y" )
+```
+3.	Fill all missing data with 0s except the sq. column. 
+```{r}
+# We  checked all of the col"sq." are na,so convert all of the data to 0 first .
+
+data2[is.na(data2)] <- 0
+sq <- "sq."
+#convert the sq. to NA
+data2[data2$sq. == 0, sq] <- NA
+
+```
+4.	Aggregate the number of corresponding facilities (Bed, Baths, Reception). 
+```{r}
+data2$bed<-as.integer(data2$bed)
+data2$beds<-as.integer(data2$beds)
+data2$Totalbeds <- data2$bed + data2$beds
+
+data2$bath<-as.integer(data2$bath)
+data2$baths<-as.integer(data2$baths)
+data2$Totalbaths<-data2$bath+data2$baths
+
+data2$reception<-as.integer(data2$reception)
+data2$receptions<-as.integer(data2$receptions)
+data2$Totalreceptions<-data2$receptions+data2$reception
+
+
+```
+5.	Extract Property type from “types” column. 
+6.	Output your pre-processed data to CSV format called ”Project_Housing.csv
+```{r}
+library(stringr)
+data2$FlatType <- str_remove_all(data2$types, "bed|for sale|\\d+")
+data2 <- data2[,-c (7,8,10,11,12,13)]
+write.csv(data2, file = "Project_Housing.csv", row.names = FALSE)
+
+```
